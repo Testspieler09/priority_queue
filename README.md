@@ -2,9 +2,8 @@
 >
 > Do not use this in any project.
 
-# Project structure
+This project contains the implementation of priority queues in C and Rust.
 
-## C lib
-
-
-## Rust lib
+Each library implements the priority queue in two different versions.
+- Min Heap Priority Queue
+- Fibonacci Heap Priority Queue
