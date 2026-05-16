@@ -4,7 +4,8 @@
 #ifndef PRIORITY_QUEUE
 
 typedef struct MinHeapNode {
-    char priority;
+    size_t priority;
+    // size_t heap_idx;
     void *data;
 } MinHeapNode;
 
@@ -20,7 +21,7 @@ MinHeapPQ *mh_with_capacity(size_t capacity);
 MinHeapNode *mh_insert(MinHeapPQ *pq, void *data, size_t priority);
 void *mh_extractMin(MinHeapPQ *pq);
 bool mh_isEmpty(MinHeapPQ *pq);
-void mh_remove(MinHeapPQ *pq, MinHeapNode *node_ptr);
+void *mh_remove(MinHeapPQ *pq, MinHeapNode *node_ptr);
 void mh_decreaseKey(MinHeapPQ *pq, MinHeapNode *node_ptr, size_t new_priority);
 MinHeapNode *mh_peek(MinHeapPQ *pq);
 MinHeapPQ *mh_merge(MinHeapPQ *lhs, MinHeapPQ *rhs);

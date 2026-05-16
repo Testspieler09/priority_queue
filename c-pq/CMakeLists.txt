@@ -17,10 +17,10 @@ target_include_directories(priority_queue PUBLIC
 
 target_compile_options(priority_queue PRIVATE -Wall -Wextra -Wpedantic)
 
-# if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt)
-#     add_subdirectory(examples)
-# endif()
-#
-# if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt)
-#     add_subdirectory(tests)
-# endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt)
+	add_subdirectory(examples)
+endif()
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt)
+	add_subdirectory(tests)
+endif()

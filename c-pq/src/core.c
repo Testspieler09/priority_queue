@@ -90,10 +90,13 @@ void *mh_extractMin(MinHeapPQ *pq) {
 
 bool mh_isEmpty(MinHeapPQ *pq) { return pq->size == 0; }
 
-void mh_remove(MinHeapPQ *pq, MinHeapNode *node_ptr) {
+void *mh_remove(MinHeapPQ *pq, MinHeapNode *node_ptr) {
     // TODO: find node index
+    void *data = node_ptr->data;
     free(node_ptr);
     // TODO: and reconcile
+
+    return data;
 }
 
 void mh_decreaseKey(MinHeapPQ *pq, MinHeapNode *node_ptr, size_t new_priority) {
