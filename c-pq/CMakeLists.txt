@@ -7,8 +7,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_library(priority_queue SHARED
-				src/core.c
-				src/utils.c
+				src/min_heap_pq.c
+				src/fib_heap_pq.c
 )
 
 target_include_directories(priority_queue PUBLIC

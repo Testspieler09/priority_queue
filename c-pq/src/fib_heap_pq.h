@@ -1,4 +1,4 @@
-#ifndef UTILS
+#ifndef FIB_HEAP_PRIORITY_QUEUE
 
 const static char *ALLOCATION_ERROR = "Could not allocate enough space";
 
@@ -12,4 +12,4 @@ typedef struct DoubleCircularLinkedList {
     DoubleCircularLinkedListNode *current;
 } DoubleCircularLinkedList;
 
-#endif // !UTILS
+#endif // !FIB_HEAP_PRIORITY_QUEUE

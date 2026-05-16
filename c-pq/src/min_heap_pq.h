@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#ifndef PRIORITY_QUEUE
+#ifndef MIN_HEAP_PRIORITY_QUEUE
 
 typedef struct MinHeapNode {
     size_t priority;
@@ -36,19 +36,4 @@ MinHeapPQ *mh_merge(MinHeapPQ *lhs, MinHeapPQ *rhs);
  */
 void mh_free(MinHeapPQ *pq);
 
-// struct FibHeapNode {
-//     void *data;
-//     struct FibHeapNode *next;
-// };
-//
-// struct FibHeapPQ {
-//     void *root;
-// };
-// void fh_insert(FibHeapPQ *pq, void *data);
-// void *fh_extractMin(FibHeapPQ *pq);
-// bool fh_isEmpty(FibHeapPQ *pq);
-// void fh_remove(FibHeapPQ *pq);
-// void fh_decreaseKey(FibHeapPQ *pq);
-// FibHeapPQ *fh_merge(FibHeapPQ *lhs, FibHeapPQ *rhs);
-
-#endif // !PRIORITY_QUEUE
+#endif // !MIN_HEAP_PRIORITY_QUEUE
