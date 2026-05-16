@@ -2,15 +2,16 @@
 #include <stdbool.h>
 
 #ifndef MIN_HEAP_PRIORITY_QUEUE
+#define MIN_HEAP_PRIORITY_QUEUE
 
 typedef struct MinHeapNode {
     size_t priority;
-    // size_t heap_idx;
+    size_t heap_idx;
     void *data;
 } MinHeapNode;
 
 typedef struct MinHeapPQ {
-    MinHeapNode *first_element;
+    MinHeapNode **elements;
     size_t size;
     size_t capacity;
 } MinHeapPQ;

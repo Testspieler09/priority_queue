@@ -1,6 +1,5 @@
 #ifndef FIB_HEAP_PRIORITY_QUEUE
-
-const static char *ALLOCATION_ERROR = "Could not allocate enough space";
+#define FIB_HEAP_PRIORITY_QUEUE
 
 typedef struct DoubleCircularLinkedListNode {
     void *data;

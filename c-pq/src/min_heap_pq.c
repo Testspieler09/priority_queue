@@ -1,13 +1,18 @@
 #include "min_heap_pq.h"
-#include "utils.h"
+#include "constants.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
+// NOTE: math for reconcile
+// Parent node = floor((i-1) / 2)
+// left child node = 2i + 1
+// right child node = 2i + 2
+
 void _double_capacity(MinHeapPQ *pq) {
     pq->capacity *= 2;
     void *new_first_element = realloc(
-        pq->first_element,
+        pq->elements,
         pq->capacity * sizeof(MinHeapNode)
     );
 
@@ -16,9 +21,16 @@ void _double_capacity(MinHeapPQ *pq) {
         exit(1);
     }
 
-    pq->first_element = new_first_element;
+    pq->elements = new_first_element;
 }
 
+void _swap(MinHeapNode *lhs, MinHeapNode *rhs) {
+    MinHeapNode temp = *lhs;
+    *lhs = *rhs;
+    lhs->heap_idx = rhs->heap_idx;
+    *rhs = temp;
+    rhs->heap_idx = temp.heap_idx;
+}
 
 MinHeapPQ *mh_new() {
     MinHeapPQ *pq = malloc(sizeof(MinHeapPQ));
@@ -28,7 +40,7 @@ MinHeapPQ *mh_new() {
         exit(1);
     }
 
-    pq->first_element = NULL;
+    pq->elements = NULL;
     pq->size = 0;
     pq->capacity = 0;
 
@@ -43,14 +55,14 @@ MinHeapPQ *mh_with_capacity(size_t capacity) {
         exit(1);
     }
 
-    MinHeapNode *dyn_arr = malloc(capacity * sizeof(MinHeapNode));
+    MinHeapNode **elements = malloc(capacity * sizeof(MinHeapNode));
 
-    if (dyn_arr == NULL) {
+    if (elements == NULL) {
         printf("%s", ALLOCATION_ERROR);
         exit(1);
     }
 
-    pq->first_element = dyn_arr;
+    pq->elements = elements;
     pq->size = 0;
     pq->capacity = capacity;
 
@@ -68,20 +80,32 @@ MinHeapNode *mh_insert(MinHeapPQ *pq, void *data, size_t priority) {
         exit(1);
     }
 
-    void *append_pos = pq->first_element + pq->size;
-    new_node->data = data;
-    new_node->priority = priority;
+    pq->elements[pq->size] = new_node;
 
-    // TODO: reconcile the heap
-    // as the heap is already sorted we only need to check the parent node and
-    // switch if needed -> continue else return
+    new_node->priority = priority;
+    new_node->heap_idx = pq->size;
+    new_node->data = data;
+
+    size_t i = pq->size;
+    while (i > 0) {
+        MinHeapNode *parent = pq->elements[(i - 1) / 2];
+        if (parent->priority > priority) {
+            _swap(parent, new_node);
+        } else {
+            break;
+        }
+    }
 
     return new_node;
 }
 
 void *mh_extractMin(MinHeapPQ *pq) {
-    MinHeapNode *data_ptr = pq->first_element->data;
-    free(pq->first_element);
+    if (!mh_isEmpty(pq)) {
+        return NULL;
+    }
+
+    MinHeapNode *data_ptr = pq->elements[0]->data;
+    free(pq->elements);
 
     // TODO: reconcile the heap
 
@@ -105,7 +129,7 @@ void mh_decreaseKey(MinHeapPQ *pq, MinHeapNode *node_ptr, size_t new_priority) {
     // TODO: reconcilde heap
 }
 
-MinHeapNode *mh_peek(MinHeapPQ *pq) { return pq->first_element; }
+MinHeapNode *mh_peek(MinHeapPQ *pq) { return pq->elements[0]; }
 
 MinHeapPQ *mh_merge(MinHeapPQ *lhs, MinHeapPQ *rhs) {
     // TODO: new min heap with the capacity of the sum of the sizes or
@@ -116,8 +140,8 @@ MinHeapPQ *mh_merge(MinHeapPQ *lhs, MinHeapPQ *rhs) {
 
 void mh_free(MinHeapPQ *pq) {
     for (size_t i = pq->size - 1; i >= 0; i--) {
-        free(pq->first_element + i);
+        free(pq->elements[i]);
     }
-
+    free(pq->elements);
     free(pq);
 }
