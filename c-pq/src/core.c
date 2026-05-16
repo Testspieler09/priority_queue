@@ -6,7 +6,10 @@
 
 void _double_capacity(MinHeapPQ *pq) {
     pq->capacity *= 2;
-    void *new_first_element = realloc(pq->first_element, pq->capacity * sizeof(MinHeapNode));
+    void *new_first_element = realloc(
+        pq->first_element,
+        pq->capacity * sizeof(MinHeapNode)
+    );
 
     if (new_first_element == NULL) {
         printf("%s", ALLOCATION_ERROR);
@@ -54,24 +57,49 @@ MinHeapPQ *mh_with_capacity(size_t capacity) {
     return pq;
 }
 
-void mh_insert(MinHeapPQ *pq, void *data) {
+MinHeapNode *mh_insert(MinHeapPQ *pq, void *data, size_t priority) {
+    if (pq->size == pq->capacity) {
+        _double_capacity(pq);
+    }
 
+    MinHeapNode *new_node = malloc(sizeof(MinHeapNode));
+    if (new_node == NULL) {
+        printf("%s", ALLOCATION_ERROR);
+        exit(1);
+    }
+
+    void *append_pos = pq->first_element + pq->size;
+    new_node->data = data;
+    new_node->priority = priority;
+
+    // TODO: reconcile the heap
+    // as the heap is already sorted we only need to check the parent node and
+    // switch if needed -> continue else return
+
+    return new_node;
 }
 
 void *mh_extractMin(MinHeapPQ *pq) {
-    // TODO: also removes the element
-    return pq->first_element;
+    MinHeapNode *data_ptr = pq->first_element->data;
+    free(pq->first_element);
+
+    // TODO: reconcile the heap
+
+    return data_ptr;
 }
 
 bool mh_isEmpty(MinHeapPQ *pq) { return pq->size == 0; }
 
-// TODO: need to adjust signature, a specific element gets removed
-void mh_remove(MinHeapPQ *pq) {
-
+void mh_remove(MinHeapPQ *pq, MinHeapNode *node_ptr) {
+    // TODO: find node index
+    free(node_ptr);
+    // TODO: and reconcile
 }
 
-void mh_decreaseKey(MinHeapPQ *pq) {
-
+void mh_decreaseKey(MinHeapPQ *pq, MinHeapNode *node_ptr, size_t new_priority) {
+    // TODO: find node index
+    node_ptr->priority = new_priority;
+    // TODO: reconcilde heap
 }
 
 MinHeapNode *mh_peek(MinHeapPQ *pq) { return pq->first_element; }
@@ -84,8 +112,9 @@ MinHeapPQ *mh_merge(MinHeapPQ *lhs, MinHeapPQ *rhs) {
 }
 
 void mh_free(MinHeapPQ *pq) {
-    // TODO: free not only the heap itself but also the elements in it.
-    // This does not need to be called on modern operating systems if it is at
-    // the end of the program, as it will free the occupied memory automatically
-    // and thus it would only create more overhead.
+    for (size_t i = pq->size - 1; i >= 0; i--) {
+        free(pq->first_element + i);
+    }
+
+    free(pq);
 }
