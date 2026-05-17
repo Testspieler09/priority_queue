@@ -1,0 +1,30 @@
+# Build artifacts
+/build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+Makefile2
+*.dir/
+progress.marks
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors
+*.swp
+*~
+*.sublime-workspace
+*.vscode/
+
+# Compiled object files
+*.o
+*.so
+*.a
+*.dylib
+*.exe
+*.out
+
+# Logs
+*.log
