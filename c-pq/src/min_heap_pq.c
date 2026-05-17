@@ -1,19 +1,15 @@
 #include "min_heap_pq.h"
 #include "constants.h"
+#include "helper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-// NOTE: math for reconcile
-// Parent node = floor((i-1) / 2)
-// left child node = 2i + 1
-// right child node = 2i + 2
-
-void _double_capacity(MinHeapPQ *pq) {
+static inline void _double_capacity(MinHeapPQ *pq) {
     pq->capacity *= 2;
     void *new_first_element = realloc(
         pq->elements,
-        pq->capacity * sizeof(MinHeapNode)
+        pq->capacity * sizeof(MinHeapNode*)
     );
 
     if (new_first_element == NULL) {
@@ -24,15 +20,44 @@ void _double_capacity(MinHeapPQ *pq) {
     pq->elements = new_first_element;
 }
 
-void _swap(MinHeapNode *lhs, MinHeapNode *rhs) {
-    MinHeapNode temp = *lhs;
-    *lhs = *rhs;
-    lhs->heap_idx = rhs->heap_idx;
-    *rhs = temp;
-    rhs->heap_idx = temp.heap_idx;
+static inline void _swap_nodes_in_heap(MinHeapPQ *pq, size_t idx1, size_t idx2) {
+    MinHeapNode *tmp = pq->elements[idx1];
+    pq->elements[idx1] = pq->elements[idx2];
+    pq->elements[idx2] = tmp;
+
+    pq->elements[idx1]->heap_idx = idx1;
+    pq->elements[idx2]->heap_idx = idx2;
 }
 
-MinHeapPQ *mh_new() {
+static inline void _bubble_down(MinHeapPQ *pq, size_t i) {
+    size_t smallest = i;
+
+    for (;;) {
+        size_t lh_idx = (2 * i) + 1;
+        size_t rh_idx = (2 * i) + 2;
+
+        if (lh_idx < pq->size
+            && pq->elements[lh_idx]->priority < pq->elements[smallest]->priority
+        ) {
+            smallest = lh_idx;
+        }
+
+        if (rh_idx < pq->size
+            && pq->elements[rh_idx]->priority < pq->elements[smallest]->priority
+        ) {
+            smallest = rh_idx;
+        }
+
+        if (smallest != i) {
+            _swap_nodes_in_heap(pq, i, smallest);
+            i = smallest;
+        } else {
+            break;
+        }
+    }
+}
+
+MinHeapPQ *mh_new(void) {
     MinHeapPQ *pq = malloc(sizeof(MinHeapPQ));
 
     if (pq == NULL) {
@@ -88,26 +113,33 @@ MinHeapNode *mh_insert(MinHeapPQ *pq, void *data, size_t priority) {
 
     size_t i = pq->size;
     while (i > 0) {
-        MinHeapNode *parent = pq->elements[(i - 1) / 2];
-        if (parent->priority > priority) {
-            _swap(parent, new_node);
+        size_t parent_idx = (i - 1) / 2;
+        if (pq->elements[parent_idx]->priority > new_node->priority) {
+            _swap_nodes_in_heap(pq, parent_idx, i);
+            i = parent_idx;
         } else {
             break;
         }
     }
+    pq->size++;
 
     return new_node;
 }
 
 void *mh_extractMin(MinHeapPQ *pq) {
-    if (!mh_isEmpty(pq)) {
+    if (mh_isEmpty(pq)) {
         return NULL;
     }
 
     MinHeapNode *data_ptr = pq->elements[0]->data;
-    free(pq->elements);
+    if (pq->size > 1) {
+        pq->elements[0] = pq->elements[pq->size - 1];
+        pq->elements[0]->heap_idx = 0;
+    }
+    free(pq->elements[0]);
+    pq->size--;
 
-    // TODO: reconcile the heap
+    _bubble_down(pq, 0);
 
     return data_ptr;
 }
@@ -115,31 +147,77 @@ void *mh_extractMin(MinHeapPQ *pq) {
 bool mh_isEmpty(MinHeapPQ *pq) { return pq->size == 0; }
 
 void *mh_remove(MinHeapPQ *pq, MinHeapNode *node_ptr) {
-    // TODO: find node index
+    size_t node_idx = node_ptr->heap_idx;
+
     void *data = node_ptr->data;
     free(node_ptr);
-    // TODO: and reconcile
+    pq->size--;
+
+    _bubble_down(pq, node_idx);
 
     return data;
 }
 
 void mh_decreaseKey(MinHeapPQ *pq, MinHeapNode *node_ptr, size_t new_priority) {
-    // TODO: find node index
     node_ptr->priority = new_priority;
-    // TODO: reconcilde heap
+
+    size_t i = node_ptr->heap_idx;
+    while (i > 0) {
+        size_t parent_idx = (i - 1) / 2;
+        if (pq->elements[parent_idx]->priority > pq->elements[i]->priority) {
+            _swap_nodes_in_heap(pq, parent_idx, i);
+            i = parent_idx;
+        } else {
+            break;
+        }
+    }
 }
 
 MinHeapNode *mh_peek(MinHeapPQ *pq) { return pq->elements[0]; }
 
 MinHeapPQ *mh_merge(MinHeapPQ *lhs, MinHeapPQ *rhs) {
-    // TODO: new min heap with the capacity of the sum of the sizes or
-    // capacities.
-    // then insert all the data that we already have. I.e. a build operation
-    return NULL;
+    MinHeapPQ *new_pq = malloc(sizeof(MinHeapPQ));
+    if (new_pq == NULL) {
+        printf("%s", ALLOCATION_ERROR);
+        exit(1);
+    }
+
+    size_t new_size = lhs->size + rhs->size;
+    size_t new_capacity = next_power_of_two(new_size);
+
+    MinHeapNode **elements = malloc(new_capacity * sizeof(MinHeapNode));
+    if (elements == NULL) {
+        printf("%s", ALLOCATION_ERROR);
+        exit(1);
+    }
+
+    for (size_t i = 0; i < lhs->size; i++) {
+        elements[i] = lhs->elements[i];
+        elements[i]->heap_idx = i;
+    }
+
+    for (size_t i = 0; i < rhs->size; i++) {
+        elements[lhs->size + i] = rhs->elements[i];
+        elements[lhs->size + i]->heap_idx = lhs->size + i;
+    }
+
+    new_pq->elements = elements;
+    new_pq->size = new_size;
+    new_pq->capacity = new_capacity;
+
+    if (new_size <= 1) {
+        return new_pq;
+    }
+
+    for (ssize_t i = new_pq->size - 1; i >= 0; i--) {
+        _bubble_down(new_pq, i);
+    }
+
+    return new_pq;
 }
 
 void mh_free(MinHeapPQ *pq) {
-    for (size_t i = pq->size - 1; i >= 0; i--) {
+    for (ssize_t i = pq->size - 1; i >= 0; i--) {
         free(pq->elements[i]);
     }
     free(pq->elements);

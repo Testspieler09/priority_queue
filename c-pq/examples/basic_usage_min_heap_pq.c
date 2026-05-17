@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../src/core.h"
+#include "../src/min_heap_pq.h"
 
 int main(void) {
     MinHeapPQ *pq = mh_new();
