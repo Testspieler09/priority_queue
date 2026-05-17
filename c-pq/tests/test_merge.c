@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include "../src/min_heap_pq.h"
@@ -13,17 +14,16 @@ int main(void) {
     mh_insert(pq2, "C", 3);
     mh_insert(pq2, "D", 2);
 
-    mh_merge(pq1, pq2);
-
-    // After merge, pq1 should have all elements
-    assert(strcmp((char *)mh_extractMin(pq1), "B") == 0);
-    assert(strcmp((char *)mh_extractMin(pq1), "D") == 0);
-    assert(strcmp((char *)mh_extractMin(pq1), "C") == 0);
-    assert(strcmp((char *)mh_extractMin(pq1), "A") == 0);
-    assert(mh_isEmpty(pq1));
-
-    mh_free(pq1);
-    mh_free(pq2);
+    MinHeapPQ *merged = mh_merge(pq1, pq2);
+    assert(strcmp((char *)mh_extractMin(merged), "B") == 0);
+    assert(strcmp((char *)mh_extractMin(merged), "D") == 0);
+    assert(strcmp((char *)mh_extractMin(merged), "C") == 0);
+    assert(strcmp((char *)mh_extractMin(merged), "A") == 0);
+    assert(mh_isEmpty(merged));
+    mh_free(merged);
+    // pq1 and pq2 nodes are now owned by merged, so just free the shells
+    free(pq1->elements); free(pq1);
+    free(pq2->elements); free(pq2);
 
     printf("test_merge passed\n");
     return 0;

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 static inline void _double_capacity(MinHeapPQ *pq) {
-    pq->capacity *= 2;
+    pq->capacity = pq->capacity == 0 ? 4 : pq->capacity * 2;
     void *new_first_element = realloc(
         pq->elements,
         pq->capacity * sizeof(MinHeapNode*)
@@ -80,7 +80,7 @@ MinHeapPQ *mh_with_capacity(size_t capacity) {
         exit(1);
     }
 
-    MinHeapNode **elements = malloc(capacity * sizeof(MinHeapNode));
+    MinHeapNode **elements = malloc(capacity * sizeof(MinHeapNode*));
 
     if (elements == NULL) {
         printf("%s", ALLOCATION_ERROR);
@@ -127,34 +127,35 @@ MinHeapNode *mh_insert(MinHeapPQ *pq, void *data, size_t priority) {
 }
 
 void *mh_extractMin(MinHeapPQ *pq) {
-    if (mh_isEmpty(pq)) {
-        return NULL;
-    }
+    if (mh_isEmpty(pq)) return NULL;
 
-    MinHeapNode *data_ptr = pq->elements[0]->data;
-    if (pq->size > 1) {
-        pq->elements[0] = pq->elements[pq->size - 1];
-        pq->elements[0]->heap_idx = 0;
-    }
-    free(pq->elements[0]);
+    MinHeapNode *min_node = pq->elements[0];
+    void *data = min_node->data;
+
     pq->size--;
+    if (pq->size > 0) {
+        pq->elements[0] = pq->elements[pq->size];
+        pq->elements[0]->heap_idx = 0;
+        _bubble_down(pq, 0);
+    }
 
-    _bubble_down(pq, 0);
-
-    return data_ptr;
+    free(min_node);   // now safe to free the original min
+    return data;
 }
 
 bool mh_isEmpty(MinHeapPQ *pq) { return pq->size == 0; }
 
 void *mh_remove(MinHeapPQ *pq, MinHeapNode *node_ptr) {
     size_t node_idx = node_ptr->heap_idx;
-
     void *data = node_ptr->data;
     free(node_ptr);
     pq->size--;
 
-    _bubble_down(pq, node_idx);
-
+    if (node_idx < pq->size) {
+        pq->elements[node_idx] = pq->elements[pq->size];
+        pq->elements[node_idx]->heap_idx = node_idx;
+        _bubble_down(pq, node_idx);
+    }
     return data;
 }
 
@@ -185,7 +186,7 @@ MinHeapPQ *mh_merge(MinHeapPQ *lhs, MinHeapPQ *rhs) {
     size_t new_size = lhs->size + rhs->size;
     size_t new_capacity = next_power_of_two(new_size);
 
-    MinHeapNode **elements = malloc(new_capacity * sizeof(MinHeapNode));
+    MinHeapNode **elements = malloc(new_capacity * sizeof(MinHeapNode*));
     if (elements == NULL) {
         printf("%s", ALLOCATION_ERROR);
         exit(1);
@@ -209,7 +210,7 @@ MinHeapPQ *mh_merge(MinHeapPQ *lhs, MinHeapPQ *rhs) {
         return new_pq;
     }
 
-    for (ssize_t i = new_pq->size - 1; i >= 0; i--) {
+    for (ssize_t i = (new_pq->size / 2) - 1; i >= 0; i--) {
         _bubble_down(new_pq, i);
     }
 
