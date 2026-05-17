@@ -139,7 +139,7 @@ void *mh_extractMin(MinHeapPQ *pq) {
         _bubble_down(pq, 0);
     }
 
-    free(min_node);   // now safe to free the original min
+    free(min_node);
     return data;
 }
 
