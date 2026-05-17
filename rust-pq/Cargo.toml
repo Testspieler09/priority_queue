@@ -4,4 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [lib]
-crate-type = ["cdylib"]
+name = "rust_pq"
+path = "src/lib.rs"
+crate-type = ["rlib", "cdylib"]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

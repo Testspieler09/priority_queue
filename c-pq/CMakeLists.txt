@@ -15,6 +15,26 @@ add_library(priority_queue SHARED
 				src/fib_heap_pq.c
 )
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported OUTPUT error)
+if(ipo_supported)
+	set_target_properties(priority_queue PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+else()
+	message(STATUS "LTO/IPO wird nicht unterstützt: ${error}")
+endif()
+
+target_compile_options(priority_queue PRIVATE
+				$<$<CONFIG:Release>:-Oz>
+				$<$<CONFIG:Release>:-ffunction-sections>
+				$<$<CONFIG:Release>:-fdata-sections>
+)
+
+target_link_options(priority_queue PRIVATE
+				$<$<CONFIG:Release>:-Wl,--gc-sections>
+				$<$<CONFIG:Release>:-s>
+)
+
+
 target_include_directories(priority_queue PUBLIC
 				${CMAKE_CURRENT_SOURCE_DIR}/src
 )
