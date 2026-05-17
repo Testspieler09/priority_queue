@@ -1,5 +1,6 @@
 pub mod fib_heap_pq;
 pub mod min_heap_pq;
+pub mod native_heap_pq;
 
 pub trait PriorityQueue<T: Clone> {
     /// Creates a new empty priority queue with default capacity.
