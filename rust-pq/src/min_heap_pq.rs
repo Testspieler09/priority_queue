@@ -126,7 +126,7 @@ impl<T: Clone> PriorityQueue<T> for MinHeapPQ<T> {
     }
 
     fn peek(&self) -> Option<&T> {
-        self.nodes.get(0).map(|node| &node.data)
+        self.nodes.first().map(|node| &node.data)
     }
 
     fn merge(&self, other: &Self) -> Self {

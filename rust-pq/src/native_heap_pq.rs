@@ -1,4 +1,4 @@
-use std::collections::BinaryHeap;
+use std::{cmp::Ordering, collections::BinaryHeap};
 
 use crate::PriorityQueue;
 
@@ -18,12 +18,8 @@ impl<T: PartialEq> PartialEq for BinHeapNode<T> {
 }
 
 impl<T: PartialOrd> PartialOrd for BinHeapNode<T> {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        match self.data.partial_cmp(&other.data) {
-            Some(core::cmp::Ordering::Equal) => {}
-            ord => return ord,
-        }
-        self.priority.partial_cmp(&other.priority)
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
