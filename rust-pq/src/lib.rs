@@ -109,8 +109,11 @@ mod tests {
         pq.insert("low", 10);
         pq.insert("high", 20);
 
-        pq.decrease_key(1, 5);
+        // Check if invalid decrease gets ignored
+        pq.decrease_key(1, 25);
+        assert_eq!(pq.peek(), Some(&"low"));
 
+        pq.decrease_key(1, 5);
         assert_eq!(pq.peek(), Some(&"high"));
     }
 

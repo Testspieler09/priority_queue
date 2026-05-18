@@ -14,9 +14,12 @@ int main(void) {
     // Initially, min is Y
     assert(mh_peek(pq)->data == y);
 
+    // Increase X should be ignored
+    mh_decreaseKey(pq, x_node, 12);
+    assert(mh_peek(pq)->data == y);
+
     // Decrease X priority below Y
     mh_decreaseKey(pq, x_node, 2);
-
     assert(mh_peek(pq)->data == x);
 
     mh_free(pq);

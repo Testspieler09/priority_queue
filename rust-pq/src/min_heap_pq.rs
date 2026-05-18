@@ -108,7 +108,11 @@ impl<T: Clone> PriorityQueue<T> for MinHeapPQ<T> {
             return;
         };
 
-        node.priority = new_priority;
+        if node.priority > new_priority {
+            node.priority = new_priority;
+        } else {
+            return;
+        }
 
         let mut idx = index;
         while idx > 0 {
