@@ -40,7 +40,7 @@ pub trait PriorityQueue<T: Clone> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{min_heap_pq::MinHeapPQ, native_heap_pq::BinHeapPQ};
+    use crate::{fib_heap_pq::FibHeapPQ, min_heap_pq::MinHeapPQ, native_heap_pq::BinHeapPQ};
 
     fn test_insert_and_peek_impl<P>()
     where
@@ -204,4 +204,5 @@ mod tests {
 
     pq_tests!(minheap, MinHeapPQ<&'static str>);
     pq_tests!(binheap, BinHeapPQ<&'static str>, unsupported_index_ops);
+    pq_tests!(fibheap, FibHeapPQ<&'static str>);
 }

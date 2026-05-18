@@ -11,7 +11,6 @@ pub struct MinHeapPQ<T> {
 }
 
 impl<T> MinHeapPQ<T> {
-    #[inline]
     fn bubble_down(&mut self, idx: usize) {
         let mut smallest = idx;
         let mut i = idx;
