@@ -1,9 +1,5 @@
 use crate::PriorityQueue;
 
-#[cfg(test)]
-#[path = "./min_heap_pq_test.rs"]
-mod tests;
-
 #[derive(Clone)]
 pub struct MinHeapNode<T> {
     data: T,

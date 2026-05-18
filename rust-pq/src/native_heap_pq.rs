@@ -2,38 +2,28 @@ use std::{cmp::Ordering, collections::BinaryHeap};
 
 use crate::PriorityQueue;
 
-#[cfg(test)]
-#[path = "./native_heap_pq_test.rs"]
-mod tests;
-
+#[derive(PartialEq, Eq)]
 pub struct BinHeapNode<T> {
     data: T,
     priority: usize,
+    heap_idx: usize,
 }
 
-impl<T: PartialEq> PartialEq for BinHeapNode<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.data == other.data && self.priority == other.priority
+impl<T: PartialOrd + Eq> Ord for BinHeapNode<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.priority.cmp(&self.priority)
     }
 }
 
-impl<T: PartialOrd> PartialOrd for BinHeapNode<T> {
+impl<T: PartialOrd + Eq> PartialOrd for BinHeapNode<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<T: PartialEq> Eq for BinHeapNode<T> {}
-
-impl<T: PartialOrd> Ord for BinHeapNode<T> {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.priority.cmp(&other.priority)
-    }
-}
-
 pub type BinHeapPQ<T> = BinaryHeap<BinHeapNode<T>>;
 
-impl<T: Clone + PartialOrd> PriorityQueue<T> for BinHeapPQ<T> {
+impl<T: Clone + PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
     fn new() -> Self {
         BinaryHeap::new()
     }
@@ -43,7 +33,11 @@ impl<T: Clone + PartialOrd> PriorityQueue<T> for BinHeapPQ<T> {
     }
 
     fn insert(&mut self, data: T, priority: usize) {
-        let new_node = BinHeapNode { data, priority };
+        let new_node = BinHeapNode {
+            data,
+            priority,
+            heap_idx: self.len(),
+        };
         self.push(new_node);
     }
 

@@ -38,3 +38,144 @@ pub trait PriorityQueue<T: Clone> {
     where
         Self: Sized;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{min_heap_pq::MinHeapPQ, native_heap_pq::BinHeapPQ};
+
+    fn test_insert_and_peek_impl<P>()
+    where
+        P: PriorityQueue<&'static str>,
+    {
+        let mut pq = P::new();
+
+        pq.insert("a", 5);
+        pq.insert("b", 2);
+        pq.insert("c", 8);
+
+        assert_eq!(pq.peek(), Some(&"b"));
+    }
+
+    fn test_extract_min_impl<P>()
+    where
+        P: PriorityQueue<&'static str>,
+    {
+        let mut pq = P::new();
+
+        pq.insert("x", 10);
+        pq.insert("y", 3);
+        pq.insert("z", 7);
+
+        assert_eq!(pq.extract_min(), Some("y"));
+        assert_eq!(pq.extract_min(), Some("z"));
+        assert_eq!(pq.extract_min(), Some("x"));
+        assert!(pq.extract_min().is_none());
+    }
+
+    fn test_is_empty_impl<P>()
+    where
+        P: PriorityQueue<&'static str>,
+    {
+        let mut pq = P::new();
+
+        assert!(pq.is_empty());
+
+        pq.insert("hello", 1);
+        assert!(!pq.is_empty());
+
+        pq.extract_min();
+        assert!(pq.is_empty());
+    }
+
+    fn test_remove_impl<P>()
+    where
+        P: PriorityQueue<&'static str>,
+    {
+        let mut pq = P::new();
+
+        pq.insert("one", 5);
+        pq.insert("two", 2);
+        pq.insert("three", 8);
+
+        assert_eq!(pq.remove(1), Some("one"));
+        assert_eq!(pq.peek(), Some(&"two"));
+    }
+
+    fn test_decrease_key_impl<P>()
+    where
+        P: PriorityQueue<&'static str>,
+    {
+        let mut pq = P::new();
+
+        pq.insert("low", 10);
+        pq.insert("high", 20);
+
+        pq.decrease_key(1, 5);
+
+        assert_eq!(pq.peek(), Some(&"high"));
+    }
+
+    fn test_merge_impl<P>()
+    where
+        P: PriorityQueue<&'static str>,
+    {
+        let mut pq1 = P::new();
+
+        pq1.insert("a", 3);
+        pq1.insert("b", 1);
+
+        let mut pq2 = P::new();
+
+        pq2.insert("c", 2);
+        pq2.insert("d", 4);
+
+        let mut pq3 = pq1.merge(&pq2);
+
+        assert_eq!(pq3.extract_min(), Some("b"));
+        assert_eq!(pq3.extract_min(), Some("c"));
+        assert_eq!(pq3.extract_min(), Some("a"));
+        assert_eq!(pq3.extract_min(), Some("d"));
+    }
+
+    macro_rules! pq_tests {
+        ($module:ident, $pq:ty) => {
+            mod $module {
+                use super::*;
+
+                #[test]
+                fn insert_and_peek() {
+                    test_insert_and_peek_impl::<$pq>();
+                }
+
+                #[test]
+                fn extract_min() {
+                    test_extract_min_impl::<$pq>();
+                }
+
+                #[test]
+                fn is_empty() {
+                    test_is_empty_impl::<$pq>();
+                }
+
+                #[test]
+                fn remove() {
+                    test_remove_impl::<$pq>();
+                }
+
+                #[test]
+                fn decrease_key() {
+                    test_decrease_key_impl::<$pq>();
+                }
+
+                #[test]
+                fn merge() {
+                    test_merge_impl::<$pq>();
+                }
+            }
+        };
+    }
+
+    pq_tests!(minheap, MinHeapPQ<&'static str>);
+    pq_tests!(binheap, BinHeapPQ<&'static str>);
+}
