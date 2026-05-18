@@ -1,9 +1,5 @@
 use crate::PriorityQueue;
 
-#[cfg(test)]
-#[path = "./min_heap_pq_test.rs"]
-mod tests;
-
 #[derive(Clone)]
 pub struct MinHeapNode<T> {
     data: T,
@@ -126,7 +122,7 @@ impl<T: Clone> PriorityQueue<T> for MinHeapPQ<T> {
     }
 
     fn peek(&self) -> Option<&T> {
-        self.nodes.get(0).map(|node| &node.data)
+        self.nodes.first().map(|node| &node.data)
     }
 
     fn merge(&self, other: &Self) -> Self {

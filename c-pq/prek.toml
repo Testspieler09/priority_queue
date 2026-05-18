@@ -1,16 +1,6 @@
 [[repos]]
 repo = "local"
-
-  [[repos.hooks]]
-  id = "build"
-  name = "build"
-  entry = "./scripts/build.sh"
-  language = "script"
-  pass_filenames = false
-
-  [[repos.hooks]]
-  id = "test"
-  name = "test"
-  entry = "./scripts/test.sh"
-  language = "script"
-  pass_filenames = false
+hooks = [
+    { id = "build", name = "build", entry = "./scripts/build.sh", language = "script", pass_filenames = false },
+    { id = "test", name = "test", entry = "./scripts/test.sh", language = "script", pass_filenames = false }
+]
