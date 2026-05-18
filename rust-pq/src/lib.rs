@@ -23,8 +23,6 @@ pub trait PriorityQueue<T: Clone> {
     fn is_empty(&self) -> bool;
 
     /// Removes a specific element by some identifier (if available).
-    /// In Rust, usually we don't remove by pointer, so this could be
-    /// adapted to remove by value or index.
     fn remove(&mut self, index: usize) -> Option<T>;
 
     /// Decreases the priority of a specific element.
@@ -140,34 +138,62 @@ mod tests {
 
     macro_rules! pq_tests {
         ($module:ident, $pq:ty) => {
+            pq_tests!($module, $pq, supported);
+        };
+        ($module:ident, $pq:ty, unsupported_index_ops) => {
             mod $module {
                 use super::*;
-
                 #[test]
                 fn insert_and_peek() {
                     test_insert_and_peek_impl::<$pq>();
                 }
-
                 #[test]
                 fn extract_min() {
                     test_extract_min_impl::<$pq>();
                 }
-
                 #[test]
                 fn is_empty() {
                     test_is_empty_impl::<$pq>();
                 }
-
+                #[test]
+                #[should_panic]
+                fn remove() {
+                    test_remove_impl::<$pq>();
+                }
+                #[test]
+                #[should_panic]
+                fn decrease_key() {
+                    test_decrease_key_impl::<$pq>();
+                }
+                #[test]
+                fn merge() {
+                    test_merge_impl::<$pq>();
+                }
+            }
+        };
+        ($module:ident, $pq:ty, supported) => {
+            mod $module {
+                use super::*;
+                #[test]
+                fn insert_and_peek() {
+                    test_insert_and_peek_impl::<$pq>();
+                }
+                #[test]
+                fn extract_min() {
+                    test_extract_min_impl::<$pq>();
+                }
+                #[test]
+                fn is_empty() {
+                    test_is_empty_impl::<$pq>();
+                }
                 #[test]
                 fn remove() {
                     test_remove_impl::<$pq>();
                 }
-
                 #[test]
                 fn decrease_key() {
                     test_decrease_key_impl::<$pq>();
                 }
-
                 #[test]
                 fn merge() {
                     test_merge_impl::<$pq>();
@@ -177,5 +203,5 @@ mod tests {
     }
 
     pq_tests!(minheap, MinHeapPQ<&'static str>);
-    pq_tests!(binheap, BinHeapPQ<&'static str>);
+    pq_tests!(binheap, BinHeapPQ<&'static str>, unsupported_index_ops);
 }

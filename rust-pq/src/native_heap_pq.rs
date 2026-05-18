@@ -2,11 +2,10 @@ use std::{cmp::Ordering, collections::BinaryHeap};
 
 use crate::PriorityQueue;
 
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct BinHeapNode<T> {
     data: T,
     priority: usize,
-    heap_idx: usize,
 }
 
 impl<T: PartialOrd + Eq> Ord for BinHeapNode<T> {
@@ -33,11 +32,7 @@ impl<T: Clone + PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
     }
 
     fn insert(&mut self, data: T, priority: usize) {
-        let new_node = BinHeapNode {
-            data,
-            priority,
-            heap_idx: self.len(),
-        };
+        let new_node = BinHeapNode { data, priority };
         self.push(new_node);
     }
 
@@ -49,19 +44,20 @@ impl<T: Clone + PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
         self.is_empty()
     }
 
-    fn remove(&mut self, index: usize) -> Option<T> {
-        todo!()
+    fn remove(&mut self, _index: usize) -> Option<T> {
+        unimplemented!("This function can not be natively implemented for BinaryHeap")
     }
 
-    fn decrease_key(&mut self, index: usize, new_priority: usize) {
-        todo!()
+    fn decrease_key(&mut self, _index: usize, _new_priority: usize) {
+        unimplemented!("This function can not be natively implemented for BinaryHeap")
     }
 
     fn peek(&self) -> Option<&T> {
-        self.peek().map(|node_ref| &node_ref.data)
+        BinaryHeap::peek(self).map(|node_ref| &node_ref.data)
     }
 
     fn merge(&self, other: &Self) -> Self {
-        todo!()
+        let new_pq = [self.as_slice(), other.as_slice()].concat();
+        BinaryHeap::from(new_pq)
     }
 }
