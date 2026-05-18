@@ -43,12 +43,14 @@ impl<T> MinHeapPQ<T> {
 }
 
 impl<T: Clone> PriorityQueue<T> for MinHeapPQ<T> {
+    #[inline]
     fn new() -> Self {
         Self {
             nodes: Vec::<MinHeapNode<T>>::new(),
         }
     }
 
+    #[inline]
     fn with_capacity(capacity: usize) -> Self {
         Self {
             nodes: Vec::<MinHeapNode<T>>::with_capacity(capacity),
@@ -121,6 +123,7 @@ impl<T: Clone> PriorityQueue<T> for MinHeapPQ<T> {
         }
     }
 
+    #[inline]
     fn peek(&self) -> Option<&T> {
         self.nodes.first().map(|node| &node.data)
     }

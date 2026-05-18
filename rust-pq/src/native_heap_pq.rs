@@ -23,41 +23,66 @@ impl<T: PartialOrd + Eq> PartialOrd for BinHeapNode<T> {
 pub type BinHeapPQ<T> = BinaryHeap<BinHeapNode<T>>;
 
 impl<T: Clone + PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
+    #[inline]
     fn new() -> Self {
         BinaryHeap::new()
     }
 
+    #[inline]
     fn with_capacity(capacity: usize) -> Self {
         BinaryHeap::with_capacity(capacity)
     }
 
+    #[inline]
     fn insert(&mut self, data: T, priority: usize) {
-        let new_node = BinHeapNode { data, priority };
-        self.push(new_node);
+        self.push(BinHeapNode { data, priority });
     }
 
+    #[inline]
     fn extract_min(&mut self) -> Option<T> {
         self.pop().map(|node| node.data)
     }
 
+    #[inline]
     fn is_empty(&self) -> bool {
-        self.is_empty()
+        BinaryHeap::is_empty(self)
     }
 
+    /// Removes an element by index.
+    ///
+    /// # Panics
+    ///
+    /// Always panics because `BinaryHeap` does not support
+    /// efficient arbitrary-index removal.
+    ///
+    /// Consider using a different priority queue implementation
+    /// if indexed removal is required.
     fn remove(&mut self, _index: usize) -> Option<T> {
         unimplemented!("This function can not be natively implemented for BinaryHeap")
     }
 
+    /// Decreases the priority of an element at a given index.
+    ///
+    /// # Panics
+    ///
+    /// Always panics because `BinaryHeap` does not expose stable
+    /// element indices or native decrease-key operations.
+    ///
+    /// Typical alternatives:
+    /// - Reinsert the element with a new priority
+    /// - Use a custom heap implementation with handles/indices
     fn decrease_key(&mut self, _index: usize, _new_priority: usize) {
         unimplemented!("This function can not be natively implemented for BinaryHeap")
     }
 
+    #[inline]
     fn peek(&self) -> Option<&T> {
-        BinaryHeap::peek(self).map(|node_ref| &node_ref.data)
+        BinaryHeap::peek(self).map(|node| &node.data)
     }
 
     fn merge(&self, other: &Self) -> Self {
-        let new_pq = [self.as_slice(), other.as_slice()].concat();
-        BinaryHeap::from(new_pq)
+        let mut heap = self.clone();
+        heap.extend(other.iter().cloned());
+        heap
     }
 }
