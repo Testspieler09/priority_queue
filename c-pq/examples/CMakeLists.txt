@@ -1,9 +1,14 @@
-add_executable(basic_usage_min_heap_pq basic_usage_min_heap_pq.c)
+function(add_pq_example name)
+    add_executable(${name} ${name}.c)
 
-target_link_libraries(basic_usage_min_heap_pq
-    PRIVATE priority_queue
-)
+    target_link_libraries(${name}
+        PRIVATE priority_queue
+    )
 
-target_include_directories(basic_usage_min_heap_pq
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
-)
+    target_include_directories(${name}
+       PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
+    )
+endfunction()
+
+add_pq_example(basic_usage_min_heap_pq)
+add_pq_example(basic_usage_fib_heap_pq)

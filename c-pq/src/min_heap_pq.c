@@ -160,7 +160,11 @@ void *mh_remove(MinHeapPQ *pq, MinHeapNode *node_ptr) {
 }
 
 void mh_decreaseKey(MinHeapPQ *pq, MinHeapNode *node_ptr, size_t new_priority) {
-    node_ptr->priority = new_priority;
+    if (node_ptr->priority > new_priority) {
+        node_ptr->priority = new_priority;
+    } else {
+        return;
+    }
 
     size_t i = node_ptr->heap_idx;
     while (i > 0) {
