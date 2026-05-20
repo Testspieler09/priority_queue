@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-mkdir -p build
-cmake .
-make
+rm -rf build
+cmake -G "Ninja" -B build .
+cmake --build build
