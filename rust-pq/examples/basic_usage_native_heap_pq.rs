@@ -41,7 +41,7 @@ fn main() {
     pq2.insert("c", 2);
     pq2.insert("d", 5);
 
-    let mut pq_merged = pq1.merge(&pq2);
+    let mut pq_merged = pq1.merge(pq2);
 
     println!("Merged queue:");
     while let Some(task) = pq_merged.extract_min() {

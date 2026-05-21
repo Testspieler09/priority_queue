@@ -1,6 +1,5 @@
 use crate::PriorityQueue;
 
-#[derive(Clone)]
 pub struct MinHeapNode<T> {
     data: T,
     priority: usize,
@@ -41,7 +40,7 @@ impl<T> MinHeapPQ<T> {
     }
 }
 
-impl<T: Clone> PriorityQueue<T> for MinHeapPQ<T> {
+impl<T> PriorityQueue<T> for MinHeapPQ<T> {
     #[inline]
     fn new() -> Self {
         Self {
@@ -131,19 +130,15 @@ impl<T: Clone> PriorityQueue<T> for MinHeapPQ<T> {
         self.nodes.first().map(|node| &node.data)
     }
 
-    fn merge(&self, other: &Self) -> Self {
-        let mut new_pq = MinHeapPQ {
-            nodes: [self.nodes.as_slice(), other.nodes.as_slice()].concat(),
-        };
+    fn merge(mut self, mut other: Self) -> Self {
+        self.nodes.append(&mut other.nodes);
 
-        if new_pq.nodes.len() <= 1 {
-            return new_pq;
+        if self.nodes.len() > 1 {
+            for i in (0..=self.nodes.len() / 2).rev() {
+                self.bubble_down(i);
+            }
         }
 
-        for i in (0..=(new_pq.nodes.len() / 2).saturating_sub(1)).rev() {
-            new_pq.bubble_down(i);
-        }
-
-        new_pq
+        self
     }
 }

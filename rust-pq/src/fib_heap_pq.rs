@@ -37,7 +37,7 @@ impl<T: Clone> PriorityQueue<T> for FibHeapPQ<T> {
         todo!()
     }
 
-    fn merge(&self, other: &Self) -> Self {
+    fn merge(mut self, other: Self) -> Self {
         todo!()
     }
 }

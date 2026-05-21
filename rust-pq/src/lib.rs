@@ -2,7 +2,7 @@ pub mod fib_heap_pq;
 pub mod min_heap_pq;
 pub mod native_heap_pq;
 
-pub trait PriorityQueue<T: Clone> {
+pub trait PriorityQueue<T> {
     /// Creates a new empty priority queue with default capacity.
     fn new() -> Self
     where
@@ -32,7 +32,7 @@ pub trait PriorityQueue<T: Clone> {
     fn peek(&self) -> Option<&T>;
 
     /// Merges another priority queue into a new one.
-    fn merge(&self, other: &Self) -> Self
+    fn merge(self, other: Self) -> Self
     where
         Self: Sized;
 }
@@ -131,7 +131,7 @@ mod tests {
         pq2.insert("c", 2);
         pq2.insert("d", 4);
 
-        let mut pq3 = pq1.merge(&pq2);
+        let mut pq3 = pq1.merge(pq2);
 
         assert_eq!(pq3.extract_min(), Some("b"));
         assert_eq!(pq3.extract_min(), Some("c"));

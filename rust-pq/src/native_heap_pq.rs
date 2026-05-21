@@ -2,7 +2,7 @@ use std::{cmp::Ordering, collections::BinaryHeap};
 
 use crate::PriorityQueue;
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 pub struct BinHeapNode<T> {
     data: T,
     priority: usize,
@@ -22,7 +22,7 @@ impl<T: PartialOrd + Eq> PartialOrd for BinHeapNode<T> {
 
 pub type BinHeapPQ<T> = BinaryHeap<BinHeapNode<T>>;
 
-impl<T: Clone + PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
+impl<T: PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
     #[inline]
     fn new() -> Self {
         BinaryHeap::new()
@@ -80,9 +80,8 @@ impl<T: Clone + PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
         BinaryHeap::peek(self).map(|node| &node.data)
     }
 
-    fn merge(&self, other: &Self) -> Self {
-        let mut heap = self.clone();
-        heap.extend(other.iter().cloned());
-        heap
+    fn merge(mut self, other: Self) -> Self {
+        self.extend(other);
+        self
     }
 }
