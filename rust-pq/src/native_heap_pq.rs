@@ -23,6 +23,8 @@ impl<T: PartialOrd + Eq> PartialOrd for BinHeapNode<T> {
 pub type BinHeapPQ<T> = BinaryHeap<BinHeapNode<T>>;
 
 impl<T: PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
+    type NodeIdentifier = ();
+
     #[inline]
     fn new() -> Self {
         BinaryHeap::new()
@@ -34,7 +36,7 @@ impl<T: PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
     }
 
     #[inline]
-    fn insert(&mut self, data: T, priority: usize) {
+    fn insert(&mut self, data: T, priority: usize) -> Self::NodeIdentifier {
         self.push(BinHeapNode { data, priority });
     }
 
@@ -57,7 +59,7 @@ impl<T: PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
     ///
     /// Consider using a different priority queue implementation
     /// if indexed removal is required.
-    fn remove(&mut self, _index: usize) -> Option<T> {
+    fn remove(&mut self, _node: Self::NodeIdentifier) -> Option<T> {
         unimplemented!("This function can not be natively implemented for BinaryHeap")
     }
 
@@ -71,7 +73,7 @@ impl<T: PartialOrd + Eq> PriorityQueue<T> for BinHeapPQ<T> {
     /// Typical alternatives:
     /// - Reinsert the element with a new priority
     /// - Use a custom heap implementation with handles/indices
-    fn decrease_key(&mut self, _index: usize, _new_priority: usize) {
+    fn decrease_key(&mut self, _node: Self::NodeIdentifier, _new_priority: usize) {
         unimplemented!("This function can not be natively implemented for BinaryHeap")
     }
 

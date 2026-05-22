@@ -29,8 +29,8 @@ fn main() {
 
     // Demonstrating decrease_key
     pq.insert("task5", 10);
-    pq.insert("task6", 15);
-    pq.decrease_key(1, 3); // Decrease priority of "task6" to 3
+    let node_6 = pq.insert("task6", 15);
+    pq.decrease_key(node_6, 3); // Decrease priority of "task6" to 3
 
     println!("After decreasing key:");
     while let Some(task) = pq.extract_min() {

@@ -180,6 +180,11 @@ void mh_decreaseKey(MinHeapPQ *pq, MinHeapNode *node_ptr, size_t new_priority) {
 
 MinHeapNode *mh_peek(MinHeapPQ *pq) { return pq->elements[0]; }
 
+// WARNING: lhs and rhs must NOT be used after this call.
+// bubble_down during reheapify overwrites heap_idx inside shared nodes,
+// corrupting the index tracking of the original heaps.
+// Correct usage: mh_free the original pq structs (not their elements)
+// after merging, and only use the returned new_pq going forward.
 MinHeapPQ *mh_merge(MinHeapPQ *lhs, MinHeapPQ *rhs) {
     MinHeapPQ *new_pq = malloc(sizeof(MinHeapPQ));
     if (new_pq == NULL) {

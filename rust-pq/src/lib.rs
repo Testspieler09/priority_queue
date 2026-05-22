@@ -3,6 +3,8 @@ pub mod min_heap_pq;
 pub mod native_heap_pq;
 
 pub trait PriorityQueue<T> {
+    type NodeIdentifier: Copy;
+
     /// Creates a new empty priority queue with default capacity.
     fn new() -> Self
     where
@@ -14,7 +16,7 @@ pub trait PriorityQueue<T> {
         Self: Sized;
 
     /// Inserts a new element with the given priority.
-    fn insert(&mut self, data: T, priority: usize);
+    fn insert(&mut self, data: T, priority: usize) -> Self::NodeIdentifier;
 
     /// Extracts and removes the element with the minimum priority.
     fn extract_min(&mut self) -> Option<T>;
@@ -23,10 +25,10 @@ pub trait PriorityQueue<T> {
     fn is_empty(&self) -> bool;
 
     /// Removes a specific element by some identifier (if available).
-    fn remove(&mut self, index: usize) -> Option<T>;
+    fn remove(&mut self, node: Self::NodeIdentifier) -> Option<T>;
 
     /// Decreases the priority of a specific element.
-    fn decrease_key(&mut self, index: usize, new_priority: usize);
+    fn decrease_key(&mut self, node: Self::NodeIdentifier, new_priority: usize);
 
     /// Returns a reference to the element with the minimum priority without removing it.
     fn peek(&self) -> Option<&T>;
@@ -48,9 +50,17 @@ mod tests {
     {
         let mut pq = P::new();
 
-        pq.insert("a", 5);
-        pq.insert("b", 2);
-        pq.insert("c", 8);
+        let idx_1 = pq.insert("a", 5);
+        // assert!(idx_1 == 0);
+
+        let idx_2 = pq.insert("b", 2);
+        // assert!(idx_1 == 1);
+        // assert!(idx_2 == 0);
+
+        let idx_3 = pq.insert("c", 8);
+        // assert!(idx_1 == 1);
+        // assert!(idx_2 == 0);
+        // assert!(idx_3 == 2);
 
         assert_eq!(pq.peek(), Some(&"b"));
     }
@@ -92,11 +102,11 @@ mod tests {
     {
         let mut pq = P::new();
 
-        pq.insert("one", 5);
-        pq.insert("two", 2);
-        pq.insert("three", 8);
+        let handle_one = pq.insert("one", 5);
+        let _handle_two = pq.insert("two", 2);
+        let _handle_three = pq.insert("three", 8);
 
-        assert_eq!(pq.remove(1), Some("one"));
+        assert_eq!(pq.remove(handle_one), Some("one"));
         assert_eq!(pq.peek(), Some(&"two"));
     }
 
@@ -106,14 +116,14 @@ mod tests {
     {
         let mut pq = P::new();
 
-        pq.insert("low", 10);
-        pq.insert("high", 20);
+        let _handle_low = pq.insert("low", 10);
+        let handle_high = pq.insert("high", 20);
 
-        // Check if invalid decrease gets ignored
-        pq.decrease_key(1, 25);
+        // Copy means handle_high is copied into the call, not moved
+        pq.decrease_key(handle_high, 25); // ignored: 25 > 20
         assert_eq!(pq.peek(), Some(&"low"));
 
-        pq.decrease_key(1, 5);
+        pq.decrease_key(handle_high, 5); // valid: 5 < 20
         assert_eq!(pq.peek(), Some(&"high"));
     }
 
