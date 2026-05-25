@@ -1,5 +1,6 @@
-use crate::PriorityQueue;
 use std::ptr::NonNull;
+
+use crate::PriorityQueue;
 
 pub struct MinHeapNode<T> {
     data: T,

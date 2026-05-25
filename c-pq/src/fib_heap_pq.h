@@ -33,8 +33,7 @@ typedef struct FibHeapNode {
  * insert, peek, decrease-key and merge, and O(log n) amortized extract-min.
  */
 typedef struct FibHeapPQ {
-    FibHeapNode *min;                  /**< Pointer to the node with the lowest priority, or NULL if empty */
-    FibHeapNode *root_list_first_node; /**< Entry point into the circular root list, or NULL if empty */
+    FibHeapNode *min; /**< Pointer to the node with the lowest priority, or NULL if empty and entry point into the circular root list, or NULL if empty */
     size_t size;                       /**< Total number of nodes in the heap */
 } FibHeapPQ;
 

@@ -6,16 +6,21 @@
 #include <math.h>
 
 void _merge_with_root_list(FibHeapPQ *pq, FibHeapNode *node) {
-    if (pq->root_list_first_node == NULL) {
-        pq->root_list_first_node = node;
+    if (pq->min == NULL) {
+        node->left = node;
+        node->right = node;
+        pq->min = node;
     } else {
-        node->right = pq->root_list_first_node;
-        node->left = pq->root_list_first_node->left;
-        pq->root_list_first_node->left->right = node;
-        pq->root_list_first_node->left = node;
+        node->right = pq->min;
+        node->left = pq->min->left;
+
+        pq->min->left->right = node;
+        pq->min->left = node;
+
+        node->right->left = node;
     }
 
-    if (pq->min == NULL || pq->min->priority > node->priority) {
+    if (node->priority < pq->min->priority) {
         pq->min = node;
     }
 }
@@ -32,11 +37,19 @@ void _remove_from_child_list(FibHeapNode *parent, FibHeapNode *node) {
 }
 
 void _remove_from_root_list(FibHeapPQ *pq, FibHeapNode *node) {
-    if (node == pq->root_list_first_node) {
-        pq->root_list_first_node = node->right;
+    if (node->right == node) {
+        pq->min = NULL;
+    } else {
+        if (pq->min == node) {
+            pq->min = node->right;
+        }
+
+        node->left->right = node->right;
+        node->right->left = node->left;
     }
-    node->left->right = node->right;
-    node->right->left = node->left;
+
+    node->left = node;
+    node->right = node;
 }
 
 void _cut(FibHeapPQ *pq, FibHeapNode *l_node, FibHeapNode *r_node) {
@@ -81,7 +94,7 @@ void _consolidate(FibHeapPQ *pq) {
         return;
     }
 
-    size_t max_degree = log2(pq->size) + 2;
+    size_t max_degree = log2(pq->size) * 2 + 1;
     FibHeapNode *A[max_degree];
     memset(A, 0, sizeof(A));
 
@@ -105,7 +118,8 @@ void _consolidate(FibHeapPQ *pq) {
                 FibHeapNode *tmp = x; x = y; y = tmp;
             }
             _heap_link(pq, y, x);
-            A[d++] = NULL;
+            A[d] = NULL;
+            d++;
         }
         A[d] = x;
     }
@@ -149,7 +163,6 @@ FibHeapPQ *fh_new(void) {
     }
 
     new_pq->min = NULL;
-    new_pq->root_list_first_node = NULL;
     new_pq->size = 0;
 
     return new_pq;
@@ -197,24 +210,31 @@ void *fh_extractMin(FibHeapPQ *pq) {
                 _merge_with_root_list(pq, child);
 
                 child->parent = NULL;
+                child->marked = false;
                 child = next;
             } while (child != start);
         }
 
+        bool singleton = (ref_node->right == ref_node);
+        FibHeapNode *next_root = ref_node->right;
+
         _remove_from_root_list(pq, ref_node);
 
-        if (ref_node == ref_node->right) {
+        if (singleton) {
             pq->min = NULL;
-            pq->root_list_first_node = NULL;
         } else {
-            pq->min = ref_node->right;
+            pq->min = next_root;
             _consolidate(pq);
         }
 
         pq->size--;
+    } else {
+        return NULL;
     }
 
-    return ref_node->data;
+    void *data = ref_node->data;
+    free(ref_node);
+    return data;
 }
 
 bool fh_isEmpty(FibHeapPQ *pq) { return pq->size == 0; }
@@ -259,17 +279,21 @@ FibHeapPQ *fh_merge(FibHeapPQ *lhs, FibHeapPQ *rhs) {
 
     // HACK: the new_pq->min value will be set in the _merge_with_root_list function
     new_pq->min = lhs->min;
-    new_pq->root_list_first_node = lhs->root_list_first_node;
     new_pq->size = lhs->size + rhs->size;
 
-    // Splice the two circular lists together directly
-    FibHeapNode *lhs_last = lhs->root_list_first_node->left;
-    FibHeapNode *rhs_last = rhs->root_list_first_node->left;
+    if (lhs->min == NULL || rhs->min == NULL) {
+        new_pq->min = lhs->min ? rhs->min : lhs->min;
+        return new_pq;
+    }
 
-    lhs_last->right = rhs->root_list_first_node;
-    rhs->root_list_first_node->left = lhs_last;
-    rhs_last->right = new_pq->root_list_first_node;
-    new_pq->root_list_first_node->left = rhs_last;
+    // Splice the two circular lists together directly
+    FibHeapNode *lhs_last = lhs->min->left;
+    FibHeapNode *rhs_last = rhs->min->left;
+
+    lhs_last->right = rhs->min;
+    rhs->min->left = lhs_last;
+    rhs_last->right = new_pq->min;
+    new_pq->min->left = rhs_last;
 
     if (rhs->min != NULL &&
         (new_pq->min == NULL || rhs->min->priority < new_pq->min->priority)) {
@@ -280,6 +304,6 @@ FibHeapPQ *fh_merge(FibHeapPQ *lhs, FibHeapPQ *rhs) {
 }
 
 void fh_free(FibHeapPQ *pq) {
-    _free_node_list(pq->root_list_first_node);
+    _free_node_list(pq->min);
     free(pq);
 }
