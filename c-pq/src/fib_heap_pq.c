@@ -282,7 +282,7 @@ FibHeapPQ *fh_merge(FibHeapPQ *lhs, FibHeapPQ *rhs) {
     new_pq->size = lhs->size + rhs->size;
 
     if (lhs->min == NULL || rhs->min == NULL) {
-        new_pq->min = lhs->min ? rhs->min : lhs->min;
+        new_pq->min = lhs->min ? lhs->min : rhs->min;
         return new_pq;
     }
 

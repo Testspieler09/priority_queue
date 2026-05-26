@@ -23,30 +23,45 @@ pub struct FibHeapPQ<T> {
 }
 
 impl<T> FibHeapPQ<T> {
-    fn merge_with_root_list(&mut self, node_ptr: FibNodePtr<T>) {
+    fn merge_with_root_list(&mut self, node: FibNodePtr<T>) {
         unsafe {
             if let Some(min) = self.min {
                 let min_left = (*min.as_ptr()).left;
 
-                (*node_ptr.as_ptr()).right = min;
-                (*node_ptr.as_ptr()).left = min_left;
-                (*min_left.as_ptr()).right = node_ptr;
-                (*min.as_ptr()).left = node_ptr;
+                (*node.as_ptr()).right = min;
+                (*node.as_ptr()).left = min_left;
+                (*min_left.as_ptr()).right = node;
+                (*min.as_ptr()).left = node;
             } else {
-                self.min = Some(node_ptr);
+                self.min = Some(node);
             }
 
             let is_new_min = self
                 .min
-                .is_none_or(|min| (*node_ptr.as_ptr()).priority < (*min.as_ptr()).priority);
+                .is_none_or(|min| (*node.as_ptr()).priority < (*min.as_ptr()).priority);
 
             if is_new_min {
-                self.min = Some(node_ptr);
+                self.min = Some(node);
             }
         }
     }
 
-    fn remove_from_child_list(&mut self, parent_ptr: FibNodePtr<T>, node_ptr: FibNodePtr<T>) {}
+    fn remove_from_child_list(&mut self, parent: FibNodePtr<T>, node: FibNodePtr<T>) {
+        unsafe {
+            if (*parent.as_ptr()).child == Some(node) {
+                (*parent.as_ptr()).child = if (*node.as_ptr()).right == node {
+                    None
+                } else {
+                    Some((*node.as_ptr()).right)
+                };
+            }
+            (*(*node.as_ptr()).left.as_ptr()).right = (*node.as_ptr()).right;
+            (*(*node.as_ptr()).right.as_ptr()).left = (*node.as_ptr()).left;
+            (*node.as_ptr()).left = node;
+            (*node.as_ptr()).right = node;
+            (*parent.as_ptr()).degree -= 1;
+        }
+    }
 
     fn remove_from_root_list(&mut self, node: FibNodePtr<T>) {
         unsafe {
@@ -69,13 +84,110 @@ impl<T> FibHeapPQ<T> {
         }
     }
 
-    fn cut(&mut self, l_node_ptr: FibNodePtr<T>, r_node_ptr: FibNodePtr<T>) {}
+    fn cut(&mut self, l_node: FibNodePtr<T>, r_node: FibNodePtr<T>) {
+        self.remove_from_child_list(r_node, l_node);
+        self.merge_with_root_list(l_node);
+        unsafe {
+            (*l_node.as_ptr()).parent = None;
+            (*l_node.as_ptr()).marked = false;
+        }
+    }
 
-    fn cascading_cut(&mut self, node_ptr: FibNodePtr<T>) {}
+    fn cascading_cut(&mut self, node: FibNodePtr<T>) {
+        unsafe {
+            let ref_node = (*node.as_ptr()).parent;
 
-    fn heap_link(&mut self, l_node_ptr: FibNodePtr<T>, r_node_ptr: FibNodePtr<T>) {}
+            let Some(ref_node) = ref_node else {
+                return;
+            };
+            if !(*node.as_ptr()).marked {
+                (*node.as_ptr()).marked = true;
+            } else {
+                self.cut(node, ref_node);
+                self.cascading_cut(ref_node);
+            }
+        }
+    }
 
-    fn consolidate(&mut self) {}
+    fn heap_link(&mut self, l_node: FibNodePtr<T>, r_node: FibNodePtr<T>) {
+        self.remove_from_root_list(l_node);
+        unsafe {
+            (*l_node.as_ptr()).left = l_node;
+            (*l_node.as_ptr()).right = l_node;
+            (*l_node.as_ptr()).parent = Some(r_node);
+            (*l_node.as_ptr()).marked = false;
+
+            if let Some(r_node_child) = (*r_node.as_ptr()).child {
+                (*l_node.as_ptr()).left = r_node_child;
+                (*l_node.as_ptr()).right = (*r_node_child.as_ptr()).left;
+                (*(*r_node_child.as_ptr()).left.as_ptr()).right = l_node;
+                (*r_node_child.as_ptr()).left = l_node;
+            } else {
+                (*r_node.as_ptr()).child = Some(l_node);
+            }
+            (*r_node.as_ptr()).degree += 1;
+        }
+    }
+
+    fn consolidate(&mut self) {
+        let Some(min) = self.min else {
+            return;
+        };
+        if unsafe { (*min.as_ptr()).right == min } {
+            return;
+        }
+
+        let max_degree = (self.size as f32).log2() as usize * 2 + 1;
+        let mut degree_table: Vec<Option<FibNodePtr<T>>> = vec![None; max_degree];
+
+        let mut roots = Vec::new();
+        let mut cur = min;
+        unsafe {
+            loop {
+                roots.push(cur);
+                cur = (*cur.as_ptr()).right;
+                if cur == min {
+                    break;
+                }
+            }
+
+            for x_ptr in roots {
+                let mut x = x_ptr;
+                let mut d = (*x.as_ptr()).degree;
+
+                while let Some(y) = degree_table[d] {
+                    let mut y = y;
+                    if (*x.as_ptr()).priority > (*y.as_ptr()).priority {
+                        std::mem::swap(&mut x, &mut y);
+                    }
+                    self.heap_link(y, x);
+                    degree_table[d] = None;
+                    d += 1;
+                }
+                degree_table[d] = Some(x);
+            }
+
+            self.min = None;
+            for slot in degree_table.iter().flatten() {
+                let node = slot.as_ptr();
+                (*node).left = *slot;
+                (*node).right = *slot;
+
+                if let Some(cur_min) = self.min {
+                    (*node).right = cur_min;
+                    (*node).left = (*cur_min.as_ptr()).left;
+                    (*(*cur_min.as_ptr()).left.as_ptr()).right = *slot;
+                    (*cur_min.as_ptr()).left = *slot;
+
+                    if (*node).priority < (*cur_min.as_ptr()).priority {
+                        self.min = Some(*slot);
+                    }
+                } else {
+                    self.min = Some(*slot);
+                }
+            }
+        }
+    }
 
     fn free_node_list(start: Option<FibNodePtr<T>>) {
         let Some(start_ptr) = start else {
@@ -107,7 +219,7 @@ impl<T> PriorityQueue<T> for FibHeapPQ<T> {
 
     // NOTE: with_capacity does not make sense for a fibonacci heap
     fn with_capacity(_capacity: usize) -> Self {
-        PriorityQueue::new()
+        Self::new()
     }
 
     fn insert(&mut self, data: T, priority: usize) -> Self::NodeIdentifier {
@@ -243,8 +355,40 @@ impl<T> PriorityQueue<T> for FibHeapPQ<T> {
             .map(|node| unsafe { &(*node.as_ptr()).data })
     }
 
-    fn merge(mut self, other: Self) -> Self {
-        todo!()
+    fn merge(self, other: Self) -> Self {
+        let mut new_pq = FibHeapPQ::<T> {
+            min: self.min,
+            size: self.size + other.size,
+        };
+
+        let (Some(lhs_min), Some(rhs_min)) = (self.min, other.min) else {
+            new_pq.min = if self.min.is_some() {
+                other.min
+            } else {
+                self.min
+            };
+            std::mem::forget(self);
+            std::mem::forget(other);
+            return new_pq;
+        };
+
+        unsafe {
+            let lhs_last = (*lhs_min.as_ptr()).left;
+            let rhs_last = (*rhs_min.as_ptr()).left;
+
+            (*lhs_last.as_ptr()).right = rhs_min;
+            (*rhs_min.as_ptr()).left = lhs_last;
+            (*rhs_last.as_ptr()).right = lhs_min;
+            (*lhs_min.as_ptr()).left = rhs_last;
+
+            if (*rhs_min.as_ptr()).priority < (*lhs_min.as_ptr()).priority {
+                new_pq.min = Some(rhs_min);
+            }
+        }
+
+        std::mem::forget(self);
+        std::mem::forget(other);
+        new_pq
     }
 }
 

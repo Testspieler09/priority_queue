@@ -50,17 +50,9 @@ mod tests {
     {
         let mut pq = P::new();
 
-        let idx_1 = pq.insert("a", 5);
-        // assert!(idx_1 == 0);
-
-        let idx_2 = pq.insert("b", 2);
-        // assert!(idx_1 == 1);
-        // assert!(idx_2 == 0);
-
-        let idx_3 = pq.insert("c", 8);
-        // assert!(idx_1 == 1);
-        // assert!(idx_2 == 0);
-        // assert!(idx_3 == 2);
+        pq.insert("a", 5);
+        pq.insert("b", 2);
+        pq.insert("c", 8);
 
         assert_eq!(pq.peek(), Some(&"b"));
     }
